@@ -29,6 +29,24 @@ const [formState,setFormState]=React.useState(0);
 
 const [open,setOpen]=React.useState(false);
 
+const {handleRegister, handleLogin}=React.useContext(AuthContext);
+
+let handleAuth= async()=>{
+  try{
+    if(formState===1)
+    {
+
+    }
+    if(formState===0){
+
+    }
+  }
+  catch(err)
+  {
+
+  }
+}
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: '100vh' }}>
@@ -87,7 +105,7 @@ const [open,setOpen]=React.useState(false);
                 label="Username"
                 name="username"
                 autoFocus
-                onChange={(e)=>setUsername(e.target.value)}
+                onChange={(e)=>setUserName(e.target.value)}
               />
               <TextField
                 margin="normal"
