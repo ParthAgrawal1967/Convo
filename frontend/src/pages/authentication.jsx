@@ -12,7 +12,8 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
+import Snackbar from '@mui/material/Snackbar';
+import { AuthContext } from "../contexts/AuthContext";
 
 
 const defaultTheme = createTheme();
@@ -23,7 +24,7 @@ export default function Authentication() {
 const [password,setPassword]=React.useState();
 const [name,setName]=React.useState();
 const [error,setError]=React.useState();
-const [messages,setMessages]=React.useState();
+const [message,setMessage]=React.useState();
 
 const [formState,setFormState]=React.useState(0);
 
@@ -31,19 +32,32 @@ const [open,setOpen]=React.useState(false);
 
 const {handleRegister, handleLogin}=React.useContext(AuthContext);
 
-let handleAuth= async()=>{
+let handleAuth= async(currentState)=>{
+    console.log("Current formState:", currentState);
   try{
-    if(formState===1)
+    if(currentState===0)
     {
-
+     let result=await handleLogin(userName, password)
     }
-    if(formState===0){
-
+    if(currentState===1){
+     let result=await handleRegister(name, userName, password);
+     console.log(result);
+     setUserName("");
+     setMessage(result);
+     setOpen(true)
+     setError("")
+     setFormState(0)
+     setPassword("")
     }
   }
   catch(err)
   {
+      console.log("Full error object:", err);
+  console.log("Axios response:", err?.response);
+  console.log("Backend message:", err?.response?.data);
 
+  let message = err?.response?.data?.message || "Something went wrong";
+  setError(message);
   }
 }
 
@@ -94,6 +108,7 @@ let handleAuth= async()=>{
                 id="username"
                 label="Full Name"
                 name="username"
+                value={name}
                 autoFocus
                 onChange={(e)=>setName(e.target.value)}
               />:<></>}
@@ -104,6 +119,7 @@ let handleAuth= async()=>{
                 id="username"
                 label="Username"
                 name="username"
+                value={userName}
                 autoFocus
                 onChange={(e)=>setUserName(e.target.value)}
               />
@@ -114,25 +130,29 @@ let handleAuth= async()=>{
                 name="password"
                 label="Password"
                 type="password"
+                value={password}
                 id="password"
                  onChange={(e)=>setPassword(e.target.value)}
               />
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
-              />
+              <p style={{color: "red"}}>{error}</p>
               <Button
                 type="button"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                 onClick={() => handleAuth(formState)}
               >
-                Sign In
+                {formState===0?"Log In":"Register"}
               </Button>
             </Box>
           </Box>
         </Grid>
       </Grid>
+      <Snackbar
+      open={open}
+      autoHideDuration={4000}
+      message={message}
+      />
     </ThemeProvider>
   );
 }

@@ -1,6 +1,7 @@
 import axios from "axios"
 import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import httpStatus from "http-status";
 
 export const AuthContext=createContext({})
 
@@ -21,7 +22,7 @@ export const AuthProvider=({children})=>{
             username: username,
             password: password
         })
-        if(request.status === htttpStatus.CREATED){
+        if(request.status === httpStatus.CREATED){
             return request.data.message;
         } 
         }catch(err){
@@ -34,8 +35,9 @@ export const AuthProvider=({children})=>{
             username: username,
             password: password
         })
-        if(request.status === htttpStatus.OK){
+        if(request.status === httpStatus.OK){
            localStorage.setItem("token",request.data.token);
+           router("/home")
         } 
         }catch(err){
           throw err;
@@ -44,7 +46,7 @@ export const AuthProvider=({children})=>{
     const router=useNavigate();
 
     const data={
-        userData, setUserData, handleRegister
+        userData, setUserData, handleRegister, handleLogin
     }
     return(
         <AuthContext.Provider value={data}>
