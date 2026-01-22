@@ -3,6 +3,8 @@ import "../styles/VideoComponent.css"
 const server_url="http://localhost:8000"
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import {io} from "socket.io-client";
+
 var connections={}
 
 const peerConfigConnections={
@@ -23,7 +25,7 @@ export default function VideoMeetComponent() {
 
     let [audioAvailable, setAudioAvailable]=useState(true);
 
-    let [video, setVideo]=useState();
+    let [video, setVideo]=useState([]);
 
     let [audio, setAudio]=useState();
 
@@ -127,10 +129,69 @@ let getUserMedia = ()=>{
         getUserMedia();
     },[video, audio])
 
+let gotMessageFromServer = () => {
+
+}
+
+let addMessage = () => {
+
+}
+
+let connectToSocketServer = () => {
+   socketRef.current=io.connect(server_url,{secure: false})
+   socketIdRef.current.on('signal', gotMessageFromServer);
+   socketRef.current.on('connect',()=>{
+    socketRef.current.emit("join-call",window.location.href)
+    socketIdRef.current=socketRef.current.id
+    socketRef.current.on("chat-message",addMessage)
+     socketRef.current.on("user-left",(id)=>{
+        setVideo((videos)=>videos.filter((video)=>video.socketId!==id))
+     })
+          socketRef.current.on("user-joined",(id, clients)=>{
+          clients.forEach((socketListId)=>{
+            connections[socketListId]=new RTCPeerConnection(peerConfigConnections)
+
+            connections[socketListId].onicecandidate = (event)=>{
+                if(event.candidate!==null)
+                {
+                    socketRef.current.emit("signal", socketListId, JSON.stringify({'ice': event.candidate}))
+                }
+            }
+            connections[socketListId].onaddstream = (event) =>{
+                let videoExists = videoRef.current.find(video=> video.socketId === socketListId);
+                if(videoExists)
+                {
+                   setVideo(videos=>{
+                    const updatedVideos = videos.map(video =>
+                        video.socketId === socketListId ? {...video, stream: event.stream}:video
+                    );
+                    videoRef.current = updatedVideos;
+                    return updatedVideos
+                   })
+                }
+                else{
+                    let newVideo={
+                        socketId: socketListId,
+                        stream: event.stream,
+                        autoPlay: true,
+                        playsinline: true
+                    }
+                    setVideos(videos=>{
+                        const updatedVideos=[...videos, newVideo];
+                        videoRef.current = updatedVideos;
+                        return updatedVideos;
+                    })
+                }
+            }
+          })
+     })
+   })
+}
+
 let getMedia =() =>{
     setVideo(videoAvailable);
     setAudio(audioAvailable);
-    //connectToSocketServer();
+    connectToSocketServer();
 }
 
 let connect = () =>{
@@ -142,7 +203,7 @@ let connect = () =>{
     <div>
         {askForUsername===true?
         <div>
-        <h2>Enter into lobby</h2>
+        <h2 style={{color: "black"}}>Enter into lobby</h2>
         <TextField id="outlined-basic" label='Username' variant="outlined" value={username} onChange={e=>setUsername(e.target.value)}/>
         <Button variant="contained" onClick={connect}>Connect</Button>
 
