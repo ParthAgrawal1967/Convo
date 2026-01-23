@@ -210,7 +210,7 @@ let connect = () =>{
         <div>
             <video ref={localVideoRef} autoPlay muted></video>
         </div>
-        </div>:<></>    
+        </div>:<> </>    
     }
     </div>
   )
