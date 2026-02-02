@@ -183,7 +183,35 @@ let connectToSocketServer = () => {
                     })
                 }
             }
+            if(window.localStream!==undefined && window.localStream!==null)
+            {
+                connections[socketListId]addStream(window.localStream);
+            }
+            else{
+
+            }
           })
+          if(id===socketIdRef.current)
+          {
+            for(let id2 in connections)
+            {
+                if(id2===socketIdRef.current)continue
+                try{
+                  connections[id2].addStream(window.localStream);
+                }
+                catch(e)
+                {
+
+                }
+                connections[id2].createOffer().then((description)=>{
+                     connections[id2].setLocalDescription(description)
+                     .then(()=>{
+                        socketRef.current.emit("signal", id2, JSON.stringify({"sdp": connections[id2].localDescription}))
+                     })
+                     .catch(e=>console.log(e))
+                })
+            }
+          }
      })
    })
 }
