@@ -1,0 +1,8 @@
+.meetVideoContainer{
+    position: relative;
+}
+
+.meetVideoContainer > .meetUserVideo{
+    position: absolute;
+    bottom: 0;
+}

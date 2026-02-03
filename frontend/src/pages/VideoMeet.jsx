@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import "../styles/VideoComponent.css";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { io } from "socket.io-client";
-
+import styles from "../styles/videoComponent.module.css"
 const server_url = "http://localhost:8000";
 
 var connections = {};
@@ -253,8 +252,8 @@ export default function VideoMeetComponent() {
           <video ref={localVideoRef} autoPlay muted />
         </div>
       ) : (
-        <>
-          <video ref={localVideoRef} autoPlay muted />
+        <div className="styles.meetVideoContainer">
+          <video className="meetUserVideo" ref={localVideoRef} autoPlay muted />
 
           {videos.map((video) => (
             <div key={video.socketId}>
@@ -267,7 +266,7 @@ export default function VideoMeetComponent() {
               />
             </div>
           ))}
-        </>
+       </div>
       )}
     </div>
   );
