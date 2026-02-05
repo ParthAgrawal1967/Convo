@@ -1,7 +1,43 @@
 .meetVideoContainer{
     position: relative;
+    height: 100vh;
+    background: black;
+    width: 100%;
+    overflow-x: hidden;
 }
-.meetVideoContainer > .meetUserVideo{
+.meetUserVideo{
+      position: absolute;
+      height: 20vh;
+      width: auto;
+      bottom: 10vh;
+      right: 0;
+      border-radius: 20px;
+}
+
+.buttonContainers{
     position: absolute;
+    width: 100vw;
     bottom: 0;
+    text-align: center;
+}
+
+.buttonContainers svg{
+  font-size: 3rem;
+}
+.conferenceView {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.conferenceView > div {
+  width: 100%;
+}
+
+.conferenceView video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
 }

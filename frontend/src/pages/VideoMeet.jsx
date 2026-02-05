@@ -3,8 +3,17 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { io } from "socket.io-client";
 import styles from "../styles/videoComponent.module.css"
+import IconButton from "@mui/material/IconButton";
 const server_url = "http://localhost:8000";
-
+import VideocamOffIcon from "@mui/icons-material/VideocamOff";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import MicOffIcon from "@mui/icons-material/MicOff";
+import MicIcon from "@mui/icons-material/Mic";
+import CallEndIcon from "@mui/icons-material/CallEnd";
+import StopScreenShareIcon from "@mui/icons-material/StopScreenShare";
+import ScreenShareIcon from "@mui/icons-material/ScreenShare";
+import Badge from "@mui/material/Badge";
+import ChatIcon from "@mui/icons-material/Chat";
 var connections = {};
 
 const peerConfigConnections = {
@@ -18,12 +27,15 @@ export default function VideoMeetComponent() {
   const videoRef = useRef([]);
 
   const [videos, setVideos] = useState([]);
+  const [screen, setScreen] = useState(false);
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [audioAvailable, setAudioAvailable] = useState(true);
+  const [screenAvailable, setScreenAvailable] = useState(false);
   const [video, setVideo] = useState();
   const [audio, setAudio] = useState();
   const [askForUsername, setAskForUsername] = useState(true);
   const [username, setUsername] = useState("");
+  const [newMessages, setNewMessages] = useState(5);
 
   /* -------------------- MEDIA HELPERS -------------------- */
 
@@ -57,6 +69,12 @@ export default function VideoMeetComponent() {
 
       setVideoAvailable(true);
       setAudioAvailable(true);
+      
+      
+      if (navigator.mediaDevices.getDisplayMedia) {
+        setScreenAvailable(true);
+      }
+
 
       window.localStream = stream;
       if (localVideoRef.current) {
@@ -64,6 +82,8 @@ export default function VideoMeetComponent() {
       }
     } catch (err) {
       console.log(err);
+      setVideoAvailable(false);
+      setAudioAvailable(false);
     }
   };
 
@@ -233,6 +253,14 @@ export default function VideoMeetComponent() {
     connectToSocketServer();
   };
 
+  let handleVideo = () => {
+    setVideo(!video)
+  }
+  
+  let handleAudio = () => {
+    setAudio(!audio)
+  }
+
   /* -------------------- RENDER -------------------- */
 
   return (
@@ -252,12 +280,39 @@ export default function VideoMeetComponent() {
           <video ref={localVideoRef} autoPlay muted />
         </div>
       ) : (
-        <div className="styles.meetVideoContainer">
-          <video className="meetUserVideo" ref={localVideoRef} autoPlay muted />
+        <div className={styles.meetVideoContainer}>
 
+          <div className={styles.buttonContainers}>
+
+            <IconButton onClick={handleVideo} style={{color:"white"}}>
+           {(video===true)? <VideocamIcon/> :<VideocamOffIcon/>}
+           </IconButton>
+
+            <IconButton style={{color:"red"}}>
+            <CallEndIcon />
+           </IconButton>
+
+            <IconButton onClick={handleAudio} style={{color:"white"}}>
+           {(audio===true)? <MicIcon/> :<MicOffIcon/>}
+           </IconButton>
+
+           {screenAvailable===true?
+            <IconButton style={{color:"white"}}>
+           {(screen===true)? <ScreenShareIcon/> :<StopScreenShareIcon/>}
+           </IconButton>:<></>}
+
+           <Badge badgeContent={newMessages} max={999} color="secondary">
+            <IconButton style={{color:"white"}}>
+           <ChatIcon />
+           </IconButton>
+           </Badge>
+
+          </div>
+
+          <video className={styles.meetUserVideo} ref={localVideoRef} autoPlay muted />
+          <div className={styles.conferenceView}>
           {videos.map((video) => (
             <div key={video.socketId}>
-              <h3>{video.socketId}</h3>
               <video
                 autoPlay
                 ref={(ref) => {
@@ -266,6 +321,7 @@ export default function VideoMeetComponent() {
               />
             </div>
           ))}
+          </div>
        </div>
       )}
     </div>
