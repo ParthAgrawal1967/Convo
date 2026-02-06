@@ -59,13 +59,13 @@ export default function VideoMeetComponent() {
 
     let [screen, setScreen]=useState();
 
-    let [showModal, setModal]=useState();
+    let [showModal, setModal]=useState(true);
 
     let [screenAvailable, setScreenAvailable]=useState();
 
     let [messages, setMessages]=useState([]);
 
-    let [message, setMessage]=useState();
+    let [message, setMessage]=useState("");
 
     let [newMessages, setNewMessages]=useState(0);
 
@@ -253,9 +253,6 @@ let gotMessageFromServer = (fromId, message) => {
   }
 }
 
-let addMessage = () => {
-
-}
 
 let connectToSocketServer = () => {
    socketRef.current=io.connect(server_url,{secure: false})
@@ -435,6 +432,50 @@ let connect = () =>{
   let handleScreen = () => {
     setScreen(!screen)
   }
+
+   let handleEndCall = () => {
+        try {
+            let tracks = localVideoref.current.srcObject.getTracks()
+            tracks.forEach(track => track.stop())
+        } catch (e) { }
+        window.location.href = "/"
+    }
+
+    let openChat = () => {
+        setModal(true);
+        setNewMessages(0);
+    }
+    let closeChat = () => {
+        setModal(false);
+    }
+    let handleMessage = (e) => {
+        setMessage(e.target.value);
+    }
+
+    const addMessage = (data, sender, socketIdSender) => {
+        setMessages((prevMessages) => [
+            ...prevMessages,
+            { sender: sender, data: data }
+        ]);
+        if (socketIdSender !== socketIdRef.current) {
+            setNewMessages((prevNewMessages) => prevNewMessages + 1);
+        }
+    };
+
+
+
+let sendMessage = () => {
+    if (message && message.trim() !== "") {
+        socketRef.current.emit('chat-message', message, username)
+        setMessage("");
+    }
+}
+
+const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+}
   
   return (
     <div>
@@ -448,14 +489,41 @@ let connect = () =>{
             <video ref={localVideoRef} autoPlay muted></video>
         </div>
         </div>: <div className={styles.meetVideoContainer}>
+          
+          {showModal? <div className={styles.chatRoom}>
+            <div className={styles.chatContainer}>
+             <h1 style={{color: "black"}}>Chat</h1>
 
+             <div className={styles.chattingDisplay}>
+
+{messages.length !== 0 ? messages.map((item, index) => {
+    return (
+        <div style={{ marginBottom: "20px" }} key={index}>
+            <p style={{ fontWeight: "bold", color: "black" }}>{item.sender}</p>
+            <p style={{ color: "black" }}>{item.data}</p>
+        </div>
+    )
+}) : <p style={{ color: "black" }}>No Messages Yet</p>}
+
+
+                            </div>
+
+
+             <div className={styles.chattingArea}>
+              <TextField id="filled-basic"  onKeyUp={handleKeyPress} value={message} onChange={(e) => setMessage(e.target.value)} label="Enter you chat" variant="filled" />
+              <button variant='contained' onClick={sendMessage}>Send</button>
+             </div>
+
+             </div>
+            </div> : <></>}
+           
           <div className={styles.buttonContainers}>
 
             <IconButton onClick={handleVideo} style={{color:"white"}}>
            {(video===true)? <VideocamIcon/> :<VideocamOffIcon/>}
            </IconButton>
 
-            <IconButton style={{color:"red"}}>
+            <IconButton onClick={handleEndCall} style={{color:"red"}}>
             <CallEndIcon />
            </IconButton>
 
@@ -469,7 +537,7 @@ let connect = () =>{
            </IconButton>:<></>}
 
            <Badge badgeContent={newMessages} max={999} color="secondary">
-            <IconButton style={{color:"white"}}>
+            <IconButton onClick={()=> setModal(!showModal)} style={{color:"white"}}>
            <ChatIcon />
            </IconButton>
            </Badge>
